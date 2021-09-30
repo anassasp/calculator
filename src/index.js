@@ -38,11 +38,22 @@ class App extends React.Component {
       }  else if(event.keyCode === 187){
         this.handleResult();
       } else if(event.keyCode === 8 && equals === -1 && Number(txt) !== 0){
-        console.log(textAll.toString());
-        this.setState(state => ({
-              textAll: textAll.toString().slice(0, textAll.length -1),
-              text: Number(txt.toString().slice(0, txt.length -1))
-            }))  
+        const sliceTextAll = textAll.toString().slice(0, textAll.length -1);
+        const slicedText = Number(txt.toString().slice(0, txt.length -1));
+
+        if(slicedText == 0 && sliceTextAll == 0) {
+          console.log("test")
+          this.setState(state => ({
+            textAll: "0",
+            text: "0"
+          }))           
+        } else {
+          this.setState(state => ({
+            textAll: sliceTextAll,
+            text: slicedText == 0 && sliceTextAll != 0? sliceTextAll: slicedText
+          }))  
+        }  
+
         }
     }
   }
@@ -98,10 +109,20 @@ class App extends React.Component {
           text: evalue
         }));
       } else {
+      console.log("test3");
         this.setState((state) => ({
           textAll: textAll.substring(0, textAll.length-2).concat(evalue),
           text: evalue
         }));
+      }
+    } else if(lastChar === '-' && evalue === '-') {
+       if(textAll[textAll.length - 2] !== '-'){
+        console.log("test")
+
+      this.setState((state) => ({
+        textAll: state.textAll.concat(evalue),
+        text: evalue
+      }));
       }
     } else {
       if (!(lastChar === ".")) {
@@ -109,19 +130,18 @@ class App extends React.Component {
           textAll: state.textAll === "0" && evalue === "-"? evalue: state.textAll.concat(evalue),
           text: evalue
         }));
-      }
+      } 
     }
   }
 
   handleResult(){
     let textAll = this.state.textAll.replace(/([+-/*])(0+)([1-9])/g, "$1$3");
-    const equals = textAll.indexOf('=');
-    const result = eval(textAll);
-    const fixedDecimal = ((result % 1).toString().length > 12)? result.toFixed(12): result;
-
-    if (equals < 0) {
+    const equals = textAll.match(/[=]/) === null? 0: textAll.match(/[=]/).length;
+    if (equals !== 1 && /[+*/-]/.test(textAll) !== false) {
       textAll = textAll.replace(/([+-/*])(0{2,})$/g, "$10");
       textAll = textAll.replace(/-{2,}/g, "+");
+      const result = eval(textAll);
+      const fixedDecimal = ((result % 1).toString().length > 12)? result.toFixed(12).toString(): result;
       if (!/[/*+-]/.test(textAll[textAll.length - 1])) {
         this.setState((state) => ({
           textAll: state.textAll.concat("=" + fixedDecimal),
